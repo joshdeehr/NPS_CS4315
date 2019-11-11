@@ -1,0 +1,31 @@
+#load libraries
+library(rjson)
+library(rlist)
+
+#import the json file
+data <- rjson::fromJSON(file="2004-05_TO_2010-11.json")
+
+#pulls out as much of the data as we can.  nested data causes problems when not same length
+df_1 <- rlist::list.stack(rlist::list.select(data$programs, id, programID, orchestra, season, 
+                            rlist::list.apply(works, function(x) rlist::list.remove(x, c('soloists', 
+                                                                                         'movement', 
+                                                                                         'interval')))))
+
+#creates a df of the nested data to be merged later
+df_2 <- rlist::list.stack(lapply(df_1$V1, `[`, 1:4), fill = TRUE) 
+
+# removes columns that are empty
+df_2 <- df_2[,colSums(is.na(df_2))<nrow(df_2)]
+
+# brute forces row into df since there was no list in df_1 observation
+new.row <- data.frame(ID=NA, composerName=NA, workTitle=NA, conductorName=NA)
+df_2 <- rbind(df_2[1:2281,],new.row,df_2[-(1:2281),])
+
+# removes one workTitle from the two observations that had two workTitles
+df_2 <- df_2[-c(4452, 5525), ]
+
+# removes the original nested works data
+df_1 <- df_1[,-(5),drop=FALSE]
+
+#creates final df with all information present
+final.df <- data.frame(cbind(df_1, df_2), row.names=NULL)
