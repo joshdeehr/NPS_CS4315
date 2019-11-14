@@ -1,0 +1,36 @@
+library(XML)
+library(dplyr)
+library(tm)
+
+doc <- xmlParse("emedcareers_eu_job_board_common_setup_pc_jobspikr_deduped_n_merged_20180822_071129200803658.xml")
+
+nodeSet <- getNodeSet(doc, path="//record")
+
+data <- xmlToDataFrame(nodes=nodeSet)  %>% 
+  select(job_title, category, company_name, post_date, job_description, job_type, salary_offered, location)
+  
+data <- data[1:300,]
+
+corpus.1 <- VCorpus(VectorSource(data$job_description))
+corpus.1 <- tm_map(corpus.1, removeWords, stopwords("english"))
+corpus.1 <- tm_map(corpus.1, stemDocument, language = "english") 
+corpus.1 <- tm_map(corpus.1, removePunctuation)
+dtm.1 <- DocumentTermMatrix(corpus.1)
+df.1 <- as.data.frame(as.matrix(dtm.1))
+
+corpus.2 <- VCorpus(VectorSource(data$salary_offered))
+dtm.2 <- DocumentTermMatrix(corpus.2)
+df.2 <- as.data.frame(as.matrix(dtm.2))
+
+df <- cbind(data, df.1, df.2)
+df <- df[,-c(5,7),drop=FALSE]
+
+# Partition of data set into 75% Train and 25% Test datasets
+set.seed(123)  # ensures we all get the sample sample of data for train/test
+
+sampler <- sample(nrow(df),trunc(nrow(df)*.75)) # samples index 
+
+Lab.Train <- df[sampler,]
+Lab.Test <- df[-sampler,]
+
+random <- randomForest(category ~., data=Lab.Train)
