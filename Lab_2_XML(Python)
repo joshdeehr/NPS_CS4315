@@ -1,0 +1,68 @@
+### Import XML file ###
+import xml.etree.ElementTree as ET
+
+tree = ET.parse('emedcareers_eu_job_board_common_setup_pc_jobspikr_deduped_n_merged_20180822_071129200803658.xml')
+root = tree.getroot()
+
+records = {'job_title': [], 'category': [], 'company_name': [], 'post_date': [], 'job_description': [], \
+               'job_type': [], 'salary_offered': [], 'location': []}
+for page in root.findall('page'):
+    record = page.find('record')
+    
+    for tag_name in records.keys():
+        tag = record.find(tag_name)
+        if tag is not None:
+            records[tag.tag].append(tag.text)
+        else:
+            records[tag_name].append("")
+
+### Convert to df and reduce obs due to memory ###
+import pandas as pd
+df = pd.DataFrame(records)
+df = df[:30000]
+
+from sklearn.feature_extraction.text import CountVectorizer
+vectorizer = CountVectorizer()
+
+corpus1 = df['job_description']
+X1 = vectorizer.fit_transform(corpus1)
+name1 =vectorizer.get_feature_names()
+X1.toarray()
+df1 = pd.DataFrame(X1.toarray())
+df1.columns = [name1]
+
+corpus2 = df['salary_offered']
+X2 = vectorizer.fit_transform(corpus2)
+name2 = vectorizer.get_feature_names()
+X2.toarray()
+df2 = pd.DataFrame(X2.toarray())
+df2.columns = [name2]
+
+final = pd.concat([df, df1, df2], axis = 1)
+final = final.drop(['job_title', 'job_description', 'salary_offered'], axis=1) #too many categorical variables
+
+### Convert from character to categorical data ###
+final['category'] = pd.Categorical(final.category)
+final['company_name'] = pd.Categorical(final.company_name)
+final['post_date'] = pd.Categorical(final.post_date)
+final['job_type'] = pd.Categorical(final.job_type)
+final['location'] = pd.Categorical(final.location)
+
+### Split into train/Test data ###
+from sklearn.model_selection import train_test_split
+y=pd.factorize(final.category)[0]
+x=final.drop('category',axis=1)
+x = pd.get_dummies(x)
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.25)
+
+### Build random forest model ###
+from sklearn.ensemble import RandomForestRegressor
+rf = RandomForestRegressor()
+# Train the model on training data
+rf.fit(x_train, y_train)
+
+rfpred = rf.predict(x_test)
+rfpred = rfpred.astype(int)
+preds = final.category[rfpred]
+
+pd.crosstab(y_test, preds, rownames=['Actual'], colnames=['Predicted'])
