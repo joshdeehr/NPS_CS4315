@@ -1,0 +1,30 @@
+##### Kmeans #####
+
+head(iris)
+
+x = iris[,-5]
+y = iris$Species
+ 
+kmeans <- kmeans(x,3)
+
+#kmeans
+table(y,kmeans$cluster)
+
+##### DBSCAN #####
+
+#db <- dbscan(x, eps = 5, minPts = 5)
+#db$cluster
+ 
+db <- dbscan(x, eps = 1, minPts = 5)
+#db$cluster
+ 
+table(y, db$cluster)
+
+##### Agglomerative #####
+ 
+clusters <- hclust(dist(x))
+#plot(clusters)
+ 
+clusterCut <- cutree(clusters, 3)
+ 
+table(y, clusterCut)
