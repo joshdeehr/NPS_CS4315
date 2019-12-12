@@ -1,0 +1,60 @@
+library(h2o)
+
+h2o.init(ip="localhost", port=54321)
+ 
+prostate.hex <-  h2o.uploadFile(path = system.file("extdata", "prostate.csv", package="h2o"), 
+                                destination_frame = "prostate.hex", skipped_columns = 1)
+ 
+summary(prostate.hex)
+  
+# Identify predictors and response
+y <- "CAPSULE"
+x <- setdiff(names(prostate.hex), y)
+
+# For binary classification, response should be a factor
+prostate.hex[,y] <- as.factor(prostate.hex[,y])
+
+# Split data into train & test
+prostate.split <- h2o.splitFrame(data=prostate.hex, ratios=0.75)
+ 
+# Create a training set from the 1st dataset in the split
+prostate.train <- prostate.split[[1]]
+# Create a testing set from the 2nd dataset in the split
+prostate.test <- prostate.split[[2]]
+ 
+#hyperparamters
+hyp_params <- list(ntrees = c(50, 100, 150), 
+                   max_depth = c(5, 10, 20),
+                   sample_rate = c(.1, .5, .75))
+
+# Train and validate a cartesian grid of GBMs
+rf_grid <- h2o.grid("drf", x = x, y = y, 
+                    grid_id = "rf_grid",
+                    training_frame = prostate.train,
+                    seed = 1,
+                    nfolds = 10,
+                    hyper_params = hyp_params)
+ 
+# Get the grid results, sorted by validation AUC
+rf_gridperf <- h2o.getGrid(grid_id = "rf_grid",
+                           sort_by = "auc",
+                           decreasing = TRUE)
+ 
+print(rf_gridperf)
+
+#save the best model
+best_rf <- h2o.getModel(rf_gridperf@model_ids[[1]])
+ 
+#Evaluate the model performance on a test set
+rf_model <- h2o.randomForest(x, y, prostate.train, 
+                             max_depth = 20, 
+                             ntrees = 150, 
+                             sample_rate = 0.1)
+ 
+best_rf_perf <- h2o.performance(model = rf_model,
+                                  newdata = prostate.test)
+ 
+h2o.auc(best_rf_perf)
+
+#Download the POJO of model
+h2o.download_pojo(rf_model, path = "C:/Users/joshua.d.deehr/Desktop/NPS")
