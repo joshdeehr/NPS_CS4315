@@ -1,0 +1,148 @@
+import requests
+
+response1 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'1', 'max_rnk':'100', 'fmt':'json'})
+response2 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'101', 'max_rnk':'200', 'fmt':'json'})
+response3 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'201', 'max_rnk':'300', 'fmt':'json'})
+response4 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'301', 'max_rnk':'400', 'fmt':'json'})
+response5 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'401', 'max_rnk':'500', 'fmt':'json'})
+response6 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'501', 'max_rnk':'600', 'fmt':'json'})
+response7 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'601', 'max_rnk':'700', 'fmt':'json'})
+response8 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'701', 'max_rnk':'800', 'fmt':'json'})
+response9 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'801', 'max_rnk':'900', 'fmt':'json'})
+response10 = requests.get('https://clinicaltrials.gov/api/query/full_studies', params={'expr':'heart+attack', 'min_rnk':'901', 'max_rnk':'1000', 'fmt':'json'})
+
+
+import json
+
+response_json1 = json.loads(response1.text)
+response_json2 = json.loads(response2.text)
+response_json3 = json.loads(response3.text)
+response_json4 = json.loads(response4.text)
+response_json5 = json.loads(response5.text)
+response_json6 = json.loads(response6.text)
+response_json7 = json.loads(response7.text)
+response_json8 = json.loads(response8.text)
+response_json9 = json.loads(response9.text)
+response_json10 = json.loads(response10.text)
+
+from pandas.io.json import json_normalize
+
+df1 = json_normalize(response_json1['FullStudiesResponse']['FullStudies'])
+df2 = json_normalize(response_json2['FullStudiesResponse']['FullStudies'])
+df3 = json_normalize(response_json3['FullStudiesResponse']['FullStudies'])
+df4 = json_normalize(response_json4['FullStudiesResponse']['FullStudies'])
+df5 = json_normalize(response_json5['FullStudiesResponse']['FullStudies'])
+df6 = json_normalize(response_json6['FullStudiesResponse']['FullStudies'])
+df7 = json_normalize(response_json7['FullStudiesResponse']['FullStudies'])
+df8 = json_normalize(response_json8['FullStudiesResponse']['FullStudies'])
+df9 = json_normalize(response_json9['FullStudiesResponse']['FullStudies'])
+df10 = json_normalize(response_json10['FullStudiesResponse']['FullStudies'])
+
+use_cols = ['Study.ProtocolSection.StatusModule.OverallStatus', 'Study.ProtocolSection.StatusModule.StartDateStruct.StartDate', 'Study.ProtocolSection.EligibilityModule.MaximumAge', 'Study.ProtocolSection.EligibilityModule.MinimumAge', 'Study.ProtocolSection.DesignModule.EnrollmentInfo.EnrollmentType', 'Study.ProtocolSection.DesignModule.EnrollmentInfo.EnrollmentCount', 'Study.ProtocolSection.DescriptionModule.DetailedDescription', 'Study.ProtocolSection.DescriptionModule.BriefSummary']
+
+df1_use = df1[use_cols]
+df2_use = df2[use_cols]
+df3_use = df3[use_cols]
+df4_use = df4[use_cols]
+df5_use = df5[use_cols]
+df6_use = df6[use_cols]
+df7_use = df7[use_cols]
+df8_use = df8[use_cols]
+df9_use = df9[use_cols]
+df10_use = df10[use_cols]
+
+df1_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df2_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df3_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df4_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df5_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df6_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df7_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df8_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df9_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+df10_use.columns = ['OverallStatus', 'StartDate', 'MaximumAge', 'MinimumAge', 'EnrollmentType', 'EnrollmentCount', 'DetailedDescription', 'BriefSummary']
+
+
+frames = [df1_use, df2_use, df3_use, df4_use, df5_use, df6_use, df7_use, df8_use, df9_use, df10_use,]
+
+import pandas as pd
+
+import numpy as np
+
+result = pd.concat(frames)
+
+result['OverallStatus'] = np.where(result['OverallStatus'] == 'Terminated', 'Terminated', np.where(result['OverallStatus'] == 'Completed', 'Completed', 'Other'))
+
+result[['MaximumAge','trash1']] = result.MaximumAge.str.split(" ",expand=True,)
+
+result[['MinimumAge','trash2']] = result.MinimumAge.str.split(" ",expand=True,)
+
+filter_result = result[['OverallStatus','MaximumAge','MinimumAge','EnrollmentCount']]
+
+filter_result.dropna(inplace = True)
+
+from sklearn.model_selection import train_test_split
+y=pd.factorize(filter_result.OverallStatus)[0]
+x=filter_result.drop('OverallStatus',axis=1)
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.25)
+
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.model_selection import cross_val_score
+
+from hyperopt import hp, fmin, tpe, STATUS_OK, Trials
+
+hspace = {'max_depth': hp.quniform("max_depth", 2, 10, 1),'n_estimators': hp.quniform ('n_estimators', 100, 1000, 10),}
+
+def objective(hspace): 
+    
+    clf = RandomForestClassifier(n_estimators=int(hspace['n_estimators']), max_depth=int(hspace['max_depth']))
+    
+    accuracy = np.mean(cross_val_score(clf, x_train, y_train, cv=20))
+    
+    return{'loss':-accuracy, 'status': STATUS_OK, 'model': clf }
+
+
+trials = Trials()
+
+
+best = fmin(fn=objective,
+            space=hspace,
+            algo=tpe.suggest,
+            max_evals=10,
+            trials=trials)
+
+trials.losses()
+
+best
+
+trials.results[0]
+
+best_model = trials.results[0]['model']
+
+best_model
+
+import pickle
+
+with open('rf.pkl', 'wb') as mf:
+    pickle.dump(best_model,mf)
+
+
+with open('rf.pkl', 'rb') as mf:
+    rf = pickle.load(mf)
+
+
+
+trained_model = rf.fit(x_train, y_train)
+
+predictions = rf.predict(x_test)   
+
+from sklearn.metrics import accuracy_score
+
+from sklearn.metrics import confusion_matrix
+
+accuracy_score(y_train, trained_model.predict(x_train))
+
+accuracy_score(y_test, predictions)
+
+confusion_matrix(y_test, predictions)
