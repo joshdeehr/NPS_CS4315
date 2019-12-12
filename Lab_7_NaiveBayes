@@ -1,0 +1,42 @@
+library(naivebayes)
+library(XML)
+library(dplyr)
+library(tm)
+library(caret)
+ 
+doc <- xmlParse("emedcareers_eu_job_board_common_setup_pc_jobspikr_deduped_n_merged_20180822_071129200803658.xml")
+ 
+nodeSet <- getNodeSet(doc, path="//record")
+ 
+data <- xmlToDataFrame(nodes=nodeSet)  %>% 
+  select(category, job_description) %>% 
+  filter(category == "Clinical Research" | category == "Data Management and Statistics" | category == "Manufacturing & Operations" | 
+           category == "Medical Affairs / Pharmaceutical Physician" | category == "Medical Information and Pharmacovigilance" |
+           category == "Medical Information and Pharmacovigilance" | category == "Pharmaceutical, Healthcare and Medical Sales" |
+           category== "Quality-assurance" | category == "Regulatory Affairs")
+
+data <- data[1:30000,]
+
+corpus.1 <- VCorpus(VectorSource(data$job_description))
+corpus.1 <- tm_map(corpus.1, removeWords, stopwords("english"))
+corpus.1 <- tm_map(corpus.1, stemDocument, language = "english") 
+corpus.1 <- tm_map(corpus.1, removePunctuation)
+dtm.1 <- DocumentTermMatrix(corpus.1)
+df.1 <- as.data.frame(as.matrix(dtm.1))
+ 
+df <- cbind(data, df.1)
+df <- df[,-c(2),drop=FALSE]
+
+# Partition of data set into 75% Train and 25% Test datasets
+set.seed(123)  # ensures we all get the sample sample of data for train/test
+
+sampler <- sample(nrow(df),trunc(nrow(df)*.75)) # samples index 
+
+Lab.Train <- df[sampler,]
+Lab.Test <- df[-sampler,]
+
+naive <- multinomial_naive_bayes(as.matrix(Lab.Train[,-1]), Lab.Train[,1], laplace = .5)
+pred_naive <- predict(naive, as.matrix(Lab.Test[,-1]))
+
+confusionMatrix(factor(pred_naive), factor(Lab.Test[,1]))
+ 
